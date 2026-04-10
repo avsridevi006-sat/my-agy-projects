@@ -23,7 +23,7 @@ jobs:
 
       - name: Deploy to Cloud Run
         run: |
-          gcloud run deploy YOUR_SERVICE_NAME \
+          gcloud run deploy my-agy-projects-git \
             --source . \
             --region europe-west1 \
             --platform managed \
