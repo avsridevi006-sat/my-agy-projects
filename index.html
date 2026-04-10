@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>VenueFlow Prototype</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Ionicons for native app icons -->
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+</head>
+<body>
+    <div id="app-container" style="position: relative;">
+        <!-- Global Close Button -->
+        <div onclick="closeApp()" style="position: absolute; top: 55px; right: 20px; width: 36px; height: 36px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 50%; z-index: 9999; display: flex; justify-content: center; align-items: center; cursor: pointer; backdrop-filter: blur(5px); box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
+            <ion-icon name="close" style="font-size: 20px; color: #fff;"></ion-icon>
+        </div>
+        <!-- Status Bar Mock -->
+        <div class="status-bar">
+            <span>9:41</span>
+            <div class="status-icons">
+                <ion-icon name="cellular"></ion-icon>
+                <ion-icon name="wifi"></ion-icon>
+                <ion-icon name="battery-full"></ion-icon>
+            </div>
+        </div>
+
+        <!-- Events Home View -->
+        <div id="view-events" class="view active">
+            <div class="header">
+                <h2>Welcome to the Venue App</h2>
+            </div>
+            <div class="content padding-wrapper">
+                <div class="event-card" onclick="handleEventClick()" style="background: var(--bg-card); border: 1px solid var(--glass-border); padding: 20px; border-radius: 16px; margin-top: 10px; cursor: pointer;">
+                    <div style="font-size: 12px; color: var(--primary); margin-bottom: 4px; font-weight: bold;">TONIGHT</div>
+                    <h3 style="font-size: 20px;">World Championship Finals</h3>
+                    <p style="margin-top: 8px;">Tap here to open your Event Assistant.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ticket Upload View -->
+        <div id="view-upload" class="view hidden">
+            <div class="header">
+                <ion-icon name="arrow-back" onclick="goBack()" style="font-size: 24px; cursor: pointer; margin-right: 16px;"></ion-icon>
+                <h2>Upload Ticket</h2>
+            </div>
+            <div class="content padding-wrapper" style="display:flex; flex-direction:column; justify-content:center; height:100%;">
+                <div class="upload-area" id="upload-zone" onclick="document.getElementById('ticket-file-input').click()">
+                    <input type="file" id="ticket-file-input" accept="image/*,.pdf,.pkpass" style="display: none;" onchange="handleTicketUpload(event)">
+                    <div class="upload-icon"><ion-icon name="qr-code-outline" style="font-size: 48px; color: var(--primary); margin-bottom: 16px;"></ion-icon></div>
+                    <h3 id="upload-title">Upload or Scan Ticket</h3>
+                    <p style="margin-top: 8px;">Tap here to attach your event pass and optimize your venue experience.</p>
+                </div>
+                <div id="upload-progress" class="hidden" style="margin-top: 24px; text-align: center;">
+                    <div style="background: rgba(255,255,255,0.1); height: 6px; border-radius: 10px; overflow: hidden;">
+                        <div id="progress-fill" style="background: var(--primary); height: 100%; width: 0%; transition: width 1.5s ease-out;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard / Timeline View -->
+        <div id="view-dashboard" class="view hidden" style="overflow-y: hidden; padding-bottom: 0;">
+            <div class="header">
+                <h2>Your Event</h2>
+                <div style="display:flex; gap:10px; flex-wrap: wrap;">
+                    <button class="secondary-btn" id="sim-gate-btn" style="padding: 6px 12px; font-size: 13px; background: rgba(74, 222, 128, 0.15); border: 1px solid var(--primary); color: var(--primary);" onclick="simulateGateEntry()">Simulate Entry</button>
+                    <button class="secondary-btn" id="sim-time-btn" style="padding: 6px 12px; font-size: 13px; color: #fbbf24; border-color: rgba(251, 191, 36, 0.3);" onclick="simulateTimeAdvance()">Simulate T-30m</button>
+                    <button class="secondary-btn" id="show-layout-btn" style="padding: 6px 12px; font-size: 13px;" onclick="showVenueLayout()">Venue Layout</button>
+                    <button class="secondary-btn" id="sim-end-btn" style="padding: 6px 12px; font-size: 13px; color: #ff6b6b; border-color: rgba(255, 107, 107, 0.3);" onclick="simulateEventEnd()">Simulate End</button>
+                </div>
+            </div>
+            <div class="content" style="display: flex; flex-direction: column; flex: 1; min-height: 0;">
+                <div class="ticket-stub">
+                    <div class="ticket-header">
+                        <h3>World Championship Finals</h3>
+                        <span class="badge">Gate B</span>
+                    </div>
+                    <div class="ticket-body">
+                        <div><p>Section</p><h4>104</h4></div>
+                        <div><p>Row</p><h4>G</h4></div>
+                        <div><p>Seat</p><h4>12</h4></div>
+                    </div>
+                </div>
+
+                <div class="ai-chat-interface">
+                    <div id="chat-history">
+                        <!-- Chat messages injected via JS -->
+                    </div>
+                    <div class="chat-input-area">
+                        <input type="text" id="chat-input-field" placeholder="Ask about entry, exit, or food..." onkeypress="handleChatKeyPress(event)">
+                        <button class="primary-btn" onclick="sendChatMessage()"><ion-icon name="send"></ion-icon></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Venue Map View -->
+        <div id="view-map" class="view hidden">
+            <div class="header" style="justify-content: flex-start; gap: 16px;">
+                <ion-icon name="arrow-back" onclick="goBack()" style="font-size: 24px; cursor: pointer;"></ion-icon>
+                <h2>Stadium Map</h2>
+            </div>
+            <div class="content no-padding">
+                <div class="map-container">
+                    <div class="map-overlay">
+                        Live Crowd Density
+                    </div>
+                    <div id="stadium-graphic">
+                        <!-- Zones injected via JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Amenities View -->
+        <div id="view-amenities" class="view hidden">
+            <div class="header">
+                <h2>Facilities</h2>
+            </div>
+            <div class="content padding-wrapper">
+                <div class="filter-tabs">
+                    <button class="tab active" data-type="all">All</button>
+                    <button class="tab" data-type="food">Food</button>
+                    <button class="tab" data-type="restroom">Restrooms</button>
+                </div>
+                <div id="amenities-list">
+                    <!-- Amenities injected via JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Notifications Removed -->
+
+        <!-- Food Ordering Modal -->
+        <div id="order-modal" class="modal-overlay hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 id="order-vendor-name">Vendor Name</h2>
+                    <ion-icon name="close" onclick="closeOrderModal()" style="font-size: 24px; cursor: pointer;"></ion-icon>
+                </div>
+                <div class="modal-body" id="order-menu">
+                    <!-- Menu items injected via JS -->
+                </div>
+                <div class="modal-footer">
+                    <h3>Fulfillment Method</h3>
+                    <div class="order-options">
+                        <label class="order-opt">
+                            <input type="radio" name="orderType" value="pickup" checked>
+                            <span>Self-Pickup (No Fee)</span>
+                        </label>
+                        <label class="order-opt">
+                            <input type="radio" name="orderType" value="delivery">
+                            <span>In-Seat Delivery (+$5)</span>
+                        </label>
+                    </div>
+                    <button class="primary-btn" style="width: 100%; margin-top: 20px;" onclick="submitOrder()">Place Order</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Feedback Modal -->
+        <div id="feedback-modal" class="modal-overlay hidden">
+            <div class="modal-content" style="text-align: center;">
+                <h2>Event Feedback</h2>
+                <p style="margin-top: 8px;">How was your experience today?</p>
+                <div class="star-rating" style="margin: 20px 0; font-size: 32px; color: var(--text-muted); cursor: pointer;">
+                    <ion-icon name="star-outline" onclick="setRating(1)"></ion-icon>
+                    <ion-icon name="star-outline" onclick="setRating(2)"></ion-icon>
+                    <ion-icon name="star-outline" onclick="setRating(3)"></ion-icon>
+                    <ion-icon name="star-outline" onclick="setRating(4)"></ion-icon>
+                    <ion-icon name="star-outline" onclick="setRating(5)"></ion-icon>
+                </div>
+                <textarea id="feedback-text" placeholder="Share your thoughts..." style="width: 100%; height: 80px; border-radius: 8px; background: var(--bg-card); color: white; border: 1px solid var(--glass-border); padding: 10px; margin-bottom: 20px; resize: none;"></textarea>
+                <button class="primary-btn" style="width: 100%;" onclick="submitFeedback()">Submit Feedback</button>
+                <button class="secondary-btn" style="width: 100%; margin-top: 10px;" onclick="closeFeedbackModal()">Skip</button>
+            </div>
+        </div>
+
+        <!-- Order Success Modal Overlay -->
+        <div id="order-success-modal" class="modal-overlay hidden" style="align-items: center; justify-content: center; z-index: 1000;">
+            <div class="modal-content" style="text-align: center; max-width: 80%; padding: 40px 20px; border-radius: 24px; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
+                <div style="width: 80px; height: 80px; border-radius: 50%; background: var(--primary-dim); color: var(--primary); display: inline-flex; align-items: center; justify-content: center; font-size: 40px; margin-bottom: 20px;">
+                    <ion-icon name="checkmark-done"></ion-icon>
+                </div>
+                <h2 style="font-size: 24px;">Order Placed!</h2>
+                <p id="order-success-text" style="margin-top: 10px;">Your food is being prepared.</p>
+            </div>
+        </div>
+
+        <!-- Bottom Tab Bar -->
+        <nav class="bottom-bar hidden" id="bottom-navigation">
+            <div class="nav-item active" data-target="view-events">
+                <ion-icon name="home"></ion-icon>
+            </div>
+            <div class="nav-item" data-target="view-map">
+                <ion-icon name="map"></ion-icon>
+            </div>
+            <div class="nav-item" data-target="view-amenities">
+                <ion-icon name="restaurant"></ion-icon>
+            </div>
+        </nav>
+    </div>
+
+    <script src="mock_data.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
